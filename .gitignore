@@ -1,0 +1,7 @@
+venv/
+__pycache__/
+.ipynb_checkpoints/
+data/
+models/churn_model.pkl
+models/scaler.pkl
+models/feature_columns.pkl
