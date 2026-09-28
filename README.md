@@ -11,7 +11,7 @@ Given a customer's account details (contract type, tenure, services subscribed, 
 ```
 mlops/
 ├── data/                       # Raw and processed datasets (gitignored)
-├── models/                     # Saved model artifacts (gitignored — regenerate via train.py)
+├── models/                     # Saved model artifacts (committed so the API and Docker image work out of the box)
 ├── src/
 │   ├── train.py                # Trains the model, saves model/scaler/feature columns to models/
 │   └── main.py                 # FastAPI app exposing the /predict endpoint
@@ -53,6 +53,24 @@ uvicorn src.main:app --reload
 The API will be live at `http://127.0.0.1:8000`. Interactive docs (Swagger UI) are available at `http://127.0.0.1:8000/docs`.
 
 > Run this from the project root, not from inside `src/` — `main.py` loads model artifacts using relative paths (e.g. `models/churn_model.pkl`), which resolve against your current working directory.
+
+## Run with Docker
+
+Build the image (from the project root):
+```bash
+docker build -t churn-api .
+```
+
+Run the container:
+```bash
+docker run -p 8000:8000 churn-api
+```
+
+Then open `http://localhost:8000/docs`. The container listens on `0.0.0.0` internally, but from your machine you always visit `localhost`.
+
+Stop it with `Ctrl+C`, or run `docker ps` to find the container ID and `docker stop <id>`.
+
+> The model files in `models/` are copied into the image at build time. If you retrain the model, rebuild the image to pick up the new artifacts.
 
 ## API reference
 
@@ -105,6 +123,6 @@ Health check. Returns:
 
 ## Notes / next steps
 
-- Dataset and trained model artifacts are gitignored — run `train.py` to regenerate them locally.
+- - The dataset is gitignored; trained model artifacts in `models/` are committed. Run `python src/train.py` to regenerate them (requires the dataset in `data/`).
 - Git setup was deferred during initial development; this repo was checkpointed once the pipeline was verified end-to-end.
 - Potential next steps: Dockerize the API, add input validation edge cases, add a `requirements.txt` if not already present, write basic tests for `/predict`.
